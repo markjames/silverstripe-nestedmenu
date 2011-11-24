@@ -10,9 +10,9 @@ the SiteTree class via extension and and makes those methods available in the te
 This decorator also adds a checkbox field (ShowChildrenInMenus) to the CMS admin interface
 to allow CMS users to hide all of the sub-pages of a page from the nested menu.
 
-## Screenshots
+## Screenshots (Basic!)
 
-![](docs/en/_images/nestedmenu-module-example.png)
+![Example of basic NestedMenu](https://github.com/markjames/silverstripe-nestedmenu/raw/master/docs/en/_images/nestedmenu-module-example.png)
 
 ## Requirements
 
