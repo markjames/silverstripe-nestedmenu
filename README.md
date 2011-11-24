@@ -44,8 +44,8 @@ Which will output HTML in the form:
 	  <li class="last link"><a class="last link" href="/contact-us/">Contact Us</a></li>
 	</ul>
 
-The HTML puts classes on both the <li> and a <a> to aid styling.
-The nested-menu class will always be put on ONLY the outer <ul>
+The HTML puts classes on both the list item and the anchor to aid styling.
+The nested-menu class will always be put on ONLY the outer ul
 
 You can also start at a sub level (good for when you have a horizontal top-level nav) by
 calling NestedMenu with a parameter indicating the level to start at:
