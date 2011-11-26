@@ -181,6 +181,14 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 
 	}
 
+	/**
+	 * Generates the HTML for a nested menu for a given level of the sitetree heirarchy.
+	 *
+	 * @param int The level of the sitetree to start the menu at (Where 1 is the top level)
+	 * @param int An optional maximum depth of recursion for the menu (starting at whichever
+	 *            level was specified in the first parameter)
+	 * @return string
+	 */
 	public function NestedMenu($level=1, $maxDepth=null) {
 
 		$siteTreeLevel = $level;
