@@ -250,7 +250,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 				// If there are any left, drop a class onto the li and recurse down
 				if (count($visible)) {
 					$classes []= 'open';
-					$children = new DataObjectSet($visible);
+					$children = $visible;
 					$ul = $this->generateListForDataObjectSet(
 						$children,
 						$siteTreeLevel+1,
@@ -282,20 +282,15 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	/**
 	 * Filters a {@link DataObjectSet} of pages, returning a new set
 	 * containing only the pages which should appear in the menu.
+	 * Extend this to manipulate the DataObjectSet to remove or add
+	 * additional entries
 	 *
 	 * @param DataObjectSet The {@link DataObjectSet} of pages to filter
 	 * @return DataObjectSet
 	 */
 	protected function filterVisiblePages($set) {
 
-		// Remove all entries the can not be viewed by the current user
-		$visible = array();
-		foreach($set as $childpage) {
-			if($childpage->canView()) {
-				$visible[] = $childpage;
-			}
-		}
-		return $visible;
+		return $set;
 
 	}
 
@@ -322,7 +317,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			if(isset($stack[$level-2])) $result = $stack[$level-2]->Children();
 		}
 
-		return new DataObjectSet($this->filterVisiblePages( $result ));
+		return $this->filterVisiblePages( $result );
 	}
 
 }
