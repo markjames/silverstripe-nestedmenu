@@ -103,6 +103,13 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	public static $list_item_format = '<li class="%3$s"><a class="%3$s" href="%2$s">%1$s</a>%4$s</li>';
 
 	/**
+	 * List of classes to hide from the sub nav
+	 *
+	 * @var array
+	 **/
+	public static $classnames_to_exclude_children = array("StackedListPage");
+
+	/**
 	 * Define an extra database field for showing children in nested menus
 	 *
 	 * @return array Returns a map where the keys are db, has_one, etc, and
@@ -239,6 +246,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			if ($page->ShowChildrenInMenus 
 				&& $page->isSection()
 				&& ($maxDepthLevel === null || $nestingLevel < $maxDepthLevel)
+				&& !in_array($page->ClassName, self::$classnames_to_exclude_children)
 			) {
 				
 				// Load the children (but only ones with ShowInMenus set)
