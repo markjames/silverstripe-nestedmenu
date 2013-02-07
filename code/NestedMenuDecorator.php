@@ -232,6 +232,10 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 		// For each page
 		foreach($set as $index => $page) {
 			$classes = array();
+
+			if( in_array($page->Parent->ClassName, self::$classnames_to_exclude_children) ) {
+				continue;
+			}
 			
 			// Get classes to put on li and a
 			$classes []= $page->FirstLast();
@@ -246,7 +250,6 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			if ($page->ShowChildrenInMenus 
 				&& $page->isSection()
 				&& ($maxDepthLevel === null || $nestingLevel < $maxDepthLevel)
-				&& !in_array($page->ClassName, self::$classnames_to_exclude_children)
 			) {
 				
 				// Load the children (but only ones with ShowInMenus set)
