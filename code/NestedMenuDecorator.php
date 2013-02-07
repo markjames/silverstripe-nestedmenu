@@ -237,6 +237,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 				continue;
 			}
 			
+			
 			// Get classes to put on li and a
 			$classes []= $page->FirstLast();
 			$classes []= $page->LinkingMode();
