@@ -184,6 +184,8 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	public function HasNestedMenu($level = 1) {
 
 		$pages = $this->filterVisiblePages( $this->getPagesForLevel($level) );
+		$this->owner->extend("FilterNestedMenu", $pages);
+
 		return !!count($pages);
 
 	}
