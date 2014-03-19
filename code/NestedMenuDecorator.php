@@ -317,6 +317,8 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			if(isset($stack[$level-2])) $result = $stack[$level-2]->Children();
 		}
 
+		if( !isset( $result ) )
+			return new DataObjectSet();
 		return $this->filterVisiblePages( $result );
 	}
 
