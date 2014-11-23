@@ -7,7 +7,7 @@ A SilverStripe module which adds template functions for a nested SiteTree menu.
 The module will add the methods **NestedMenu** and **HasNestedMenu** to
 the SiteTree class via extension and and makes those methods available in the templates.
 
-This decorator also adds a checkbox field (ShowChildrenInMenus) to the CMS admin interface
+This extension also adds a checkbox field (ShowChildrenInMenus) to the CMS admin interface
 to allow CMS users to hide all of the sub-pages of a page from the nested menu.
 
 ## Screenshots (Basic!)
@@ -16,7 +16,7 @@ to allow CMS users to hide all of the sub-pages of a page from the nested menu.
 
 ## Requirements
 
-*  SilverStripe 2.4
+*  SilverStripe 3.0.x or 3.1.x
 
 ## Installation
 
