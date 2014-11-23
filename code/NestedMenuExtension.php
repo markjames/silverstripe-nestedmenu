@@ -1,8 +1,7 @@
 <?php
-
 /**
- * A NestedMenu Decorator which provides the ability to add nested <ul> SiteTree menus into
- * your Silverstripe 2.4.x templates.
+ * A NestedMenu Extension which provides the ability to add nested <ul> SiteTree menus into
+ * your Silverstripe 3.1.x templates.
  *
  * By default, the containing module will add the methods NestedMenu and HasNestedMenu to
  * the SiteTree class and all subclasses. This decorator also adds a checkbox field
@@ -17,14 +16,14 @@
  *
  * <code>
  * 	<ul class="nested-menu nested-menu-level-1 nested-menu-nesting-1">
- * 	  <li class="first link"><a class="first link" href="/">Home</a></li>
+ * 	  <li class="link"><a class="link" href="/">Home</a></li>
  * 	  <li class="current open"><a class="current open" href="/about-us/">About Us</a>
- * 	    <ul class="nested-menu-level-2 nested-menu-nesting-2"><li class="first link">
- * 	      <li class="first link"><a class="first link" href="/about-us/our-staff/">Our Staff</a></li>
- * 	      <li class="last link"><a class="last link" href="/about-us/another-page/">Another Page</a></li>
+ * 	    <ul class="nested-menu-level-2 nested-menu-nesting-2"><li class="link">
+ * 	      <li class="link"><a class="link" href="/about-us/our-staff/">Our Staff</a></li>
+ * 	      <li class="link"><a class="link" href="/about-us/another-page/">Another Page</a></li>
  * 	    </ul>
  * 	  </li>
- * 	  <li class="last link"><a class="last link" href="/contact-us/">Contact Us</a></li>
+ * 	  <li class="link"><a class="link" href="/contact-us/">Contact Us</a></li>
  * 	</ul>
  * </code>
  * 
@@ -85,7 +84,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-class NestedMenuDecorator extends SiteTreeDecorator {
+class NestedMenuExtension extends SiteTreeExtension {
+
+	private static $db = array(
+		'ShowChildrenInMenus' => 'Boolean'
+	);
+
+	private static $defaults = array(
+		'ShowChildrenInMenus' => true
+	);
 
 	/**
 	 * The format for a single item within the nested menu.
@@ -100,41 +107,21 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * 
 	 * @var string
 	 */
-	public static $list_item_format = '<li class="%3$s"><a class="%3$s" href="%2$s">%1$s</a>%4$s</li>';
+	private static $list_item_format = '<li class="%3$s"><a class="%3$s" href="%2$s">%1$s</a>%4$s</li>';
 
 	/**
-	 * Define an extra database field for showing children in nested menus
-	 *
-	 * @return array Returns a map where the keys are db, has_one, etc, and
-	 *               the values are additional fields/relations to be defined.
+	 * @param FieldList
 	 */
-	function extraStatics() {
-		return array(
-			'db' => array(
-				'ShowChildrenInMenus' => 'Boolean',
-			),
-			'defaults' => array(
-				'ShowChildrenInMenus' => true,
-			)
-		);
-	}
-
-	/**
-	 * Add in a CMS-editable field for choosing if the child pages of the current page
-	 * should show up in nested menus
-	 *
-	 * @param FieldSet $fields FieldSet with a contained TabSet
-	 */
-	function updateCMSFields(&$fields) {
-
+	public function updateSettingsFields(FieldList $fields) {
 		$fields->insertAfter(
-			new Checkboxfield(
+			CheckboxField::create(
 				'ShowChildrenInMenus',
 				_t('NestedMenuDecorator.SHOWCHILDRENINMENUS', "Show children in menus?")
 			),
 			'ShowInMenus'
 		);
-
+		
+		return $fields;
 	}
 
 	/**
@@ -159,7 +146,6 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			// TODO: Is there a better option than raw SQL?
 			DB::getConn()->query("UPDATE \"{$class}_Live\" SET \"ShowChildrenInMenus\" = 1");
 			DB::getConn()->query("UPDATE \"{$class}\" SET \"ShowChildrenInMenus\" = 1");
-
 		} 
 
 	}
@@ -175,10 +161,9 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * @return boolean TRUE if a menu will be displayed, FALSE otherwise
 	 */
 	public function HasNestedMenu($level = 1) {
-
 		$pages = $this->filterVisiblePages( $this->getPagesForLevel($level) );
-		return !!count($pages);
 
+		return !!count($pages);
 	}
 
 	/**
@@ -192,10 +177,9 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	public function NestedMenu($level=1, $maxDepth=null) {
 
 		$siteTreeLevel = $level;
-
 		$pages = $this->getPagesForLevel($level);
-		return $this->generateListForDataObjectSet( $pages, $level, 1, $maxDepth );
 
+		return $this->generateListForDataList($pages, $level, 1, $maxDepth);
 	}
 
 	/**
@@ -204,17 +188,17 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 *
 	 * This method does all of the work turning a list of pages into a nested <ul>
 	 *
-	 * @param DataObjectSet The {@link DataObjectSet} of pages to include in the list at this level
+	 * @param DataList The {@link DataList} of pages to include in the list at this level
 	 * @param int The level of the sitetree that this set represents
 	 * @param int The recursion depth (might be different to the sitetree level if the menu did
 	 *            not start from the top level pages)
 	 * @param int The maximum number of levels to recurse through
 	 * @return String
 	 */
-	protected function generateListForDataObjectSet($set, $siteTreeLevel = 1, $nestingLevel = 1, $maxDepthLevel = null) {
+	protected function generateListForDataList($list, $siteTreeLevel = 1, $nestingLevel = 1, $maxDepthLevel = null) {
 
 		// Open the <ul> (stick an extra 'nested-menu' class on if it is top-level)
-		if (1 == $nestingLevel) {
+		if ($nestingLevel == 1) {
 			$out = '<ul class="nested-menu nested-menu-level-' . $siteTreeLevel
 			     . ' nested-menu-nesting-' . $nestingLevel . '">';
 		} else {
@@ -223,12 +207,12 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 		}
 
 		// For each page
-		foreach($set as $index => $page) {
+		foreach($list as $page) {
+
 			$classes = array();
 			
 			// Get classes to put on li and a
-			$classes []= $page->FirstLast();
-			$classes []= $page->LinkingMode();
+			$classes[] = $page->LinkingMode();
 
 			$ul = '';
 
@@ -240,25 +224,23 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 				&& $page->isSection()
 				&& ($maxDepthLevel === null || $nestingLevel < $maxDepthLevel)
 			) {
-				
 				// Load the children (but only ones with ShowInMenus set)
 				$children = $page->Children();
 
 				// Hide pages which the current user cannot view for other reasons (i.e. permissions)
-				$visible = $this->filterVisiblePages( $children );
+				$visible = $this->filterVisiblePages($children);
 
 				// If there are any left, drop a class onto the li and recurse down
 				if (count($visible)) {
-					$classes []= 'open';
+					$classes[] = 'open';
 					$children = $visible;
-					$ul = $this->generateListForDataObjectSet(
+					$ul = $this->generateListForDataList(
 						$children,
-						$siteTreeLevel+1,
-						$nestingLevel+1,
+						$siteTreeLevel + 1,
+						$nestingLevel + 1,
 						$maxDepthLevel
 					);
 				}
-
 			}
 
 			// We have everything now, build up the list item using the defined string format
@@ -276,22 +258,19 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 		$out .= '</ul>';
 
 		return $out;
-
 	}
 
 	/**
-	 * Filters a {@link DataObjectSet} of pages, returning a new set
+	 * Filters a {@link DataList} of pages, returning a new set
 	 * containing only the pages which should appear in the menu.
-	 * Extend this to manipulate the DataObjectSet to remove or add
+	 * Extend this to manipulate the DataList to remove or add
 	 * additional entries
 	 *
-	 * @param DataObjectSet The {@link DataObjectSet} of pages to filter
-	 * @return DataObjectSet
+	 * @param DataList The {@link DataList} of pages to filter
+	 * @return DataList
 	 */
-	protected function filterVisiblePages($set) {
-
-		return $set;
-
+	protected function filterVisiblePages($list) {
+		return $list;
 	}
 
 	/**
@@ -301,23 +280,22 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * @return DataObjectSet
 	 */
 	protected function getPagesForLevel($level = 1) {
-		if($level == 1) {
+		if ($level == 1) {
 			$result = DataObject::get("SiteTree", "\"ShowInMenus\" = 1 AND \"ParentID\" = 0");
-
 		} else {
 			$parent = $this->owner->data();
 			$stack = array($parent);
 			
-			if($parent) {
+			if ($parent) {
 				while($parent = $parent->Parent) {
 					array_unshift($stack, $parent);
 				}
 			}
 			
-			if(isset($stack[$level-2])) $result = $stack[$level-2]->Children();
+			if (isset($stack[$level-2])) $result = $stack[$level-2]->Children();
 		}
 
-		return $this->filterVisiblePages( $result );
+		return $this->filterVisiblePages($result);
 	}
 
 }
