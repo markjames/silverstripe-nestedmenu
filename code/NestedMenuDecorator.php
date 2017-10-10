@@ -8,7 +8,7 @@
  * the SiteTree class and all subclasses. This decorator also adds a checkbox field
  * (ShowChildrenInMenus) to the CMS admin interface to allow CMS users to hide all of the
  * sub-pages of a page from the nested menu.
- * 
+ *
  * Basic usage in your template:
  *
  * <code>$NestedMenu</code>
@@ -27,13 +27,13 @@
  * 	  <li class="last link"><a class="last link" href="/contact-us/">Contact Us</a></li>
  * 	</ul>
  * </code>
- * 
+ *
  * The HTML puts classes on both the <li> and a <a> to aid styling.
  * The nested-menu class will always be put on ONLY the outer <ul>
  *
  * You can also start at a sub level (good for when you have a horizontal top-level nav) by
  * calling NestedMenu with a parameter indicating the level to start at:
- * 
+ *
  *	<code>$NestedMenu(2)</code>
  *
  * You can limit the maximum depth of the nesting by specifying a second parameter:
@@ -56,24 +56,24 @@
  * @copyright	2011 - Mark James
  * @license		New BSD License
  * @link		http://github.com/markjames/silverstripe-nestedmenu
- * 
+ *
  * Copyright (c) 2011, Mark James
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright notice,
  *       this list of conditions and the following disclaimer.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above copyright notice,
  *       this list of conditions and the following disclaimer in the documentation
  *       and/or other materials provided with the distribution.
- * 
+ *
  *     * Neither the name of Zend Technologies USA, Inc. nor the names of its
  *       contributors may be used to endorse or promote products derived from this
  *       software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -97,7 +97,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * - %2$s The page link
 	 * - %3$s The classes added to the list item (and also head anchor)
 	 * - %4$s The code (nested ULs) for any nested sub-menus
-	 * 
+	 *
 	 * @var string
 	 */
 	public static $list_item_format = '<li class="%3$s"><a class="%3$s" href="%2$s">%1$s</a>%4$s</li>';
@@ -141,7 +141,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * Set up the default values for ShowChildrenInMenus for when
 	 * dev/build is run.
 	 *
-	 * @todo Rework check so that if a CMS user unchecks ShowChildrenInMenus on _all_ pages 
+	 * @todo Rework check so that if a CMS user unchecks ShowChildrenInMenus on _all_ pages
 	 *       that running this does not re-check it for all pages (consult page versions?)
 	 */
 	public function requireDefaultRecords() {
@@ -160,7 +160,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			DB::getConn()->query("UPDATE \"{$class}_Live\" SET \"ShowChildrenInMenus\" = 1");
 			DB::getConn()->query("UPDATE \"{$class}\" SET \"ShowChildrenInMenus\" = 1");
 
-		} 
+		}
 
 	}
 
@@ -225,7 +225,7 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 		// For each page
 		foreach($set as $index => $page) {
 			$classes = array();
-			
+
 			// Get classes to put on li and a
 			$classes []= $page->FirstLast();
 			$classes []= $page->LinkingMode();
@@ -236,11 +236,11 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 			// * This page is allowed to display it's children in a menu (ShowChildrenInMenus)
 			// * Is the current page, or is an ancestor to the current page
 			// * We have not exceeded the maximum depth level that was specified
-			if ($page->ShowChildrenInMenus 
+			if ($page->ShowChildrenInMenus
 				&& $page->isSection()
 				&& ($maxDepthLevel === null || $nestingLevel < $maxDepthLevel)
 			) {
-				
+
 				// Load the children (but only ones with ShowInMenus set)
 				$children = $page->Children();
 
@@ -301,19 +301,20 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	 * @return DataObjectSet
 	 */
 	protected function getPagesForLevel($level = 1) {
+		$result = array();
 		if($level == 1) {
 			$result = DataObject::get("SiteTree", "\"ShowInMenus\" = 1 AND \"ParentID\" = 0");
 
 		} else {
 			$parent = $this->owner->data();
 			$stack = array($parent);
-			
+
 			if($parent) {
 				while($parent = $parent->Parent) {
 					array_unshift($stack, $parent);
 				}
 			}
-			
+
 			if(isset($stack[$level-2])) $result = $stack[$level-2]->Children();
 		}
 
