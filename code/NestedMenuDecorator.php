@@ -103,6 +103,13 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	public static $list_item_format = '<li class="%3$s"><a class="%3$s" href="%2$s">%1$s</a>%4$s</li>';
 
 	/**
+	 * List of classes to hide from the sub nav
+	 *
+	 * @var array
+	 **/
+	public static $classnames_to_exclude_children = array("StackedListPage");
+
+	/**
 	 * Define an extra database field for showing children in nested menus
 	 *
 	 * @return array Returns a map where the keys are db, has_one, etc, and
@@ -177,6 +184,8 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 	public function HasNestedMenu($level = 1) {
 
 		$pages = $this->filterVisiblePages( $this->getPagesForLevel($level) );
+		$this->owner->extend("FilterNestedMenu", $pages);
+
 		return !!count($pages);
 
 	}
@@ -226,9 +235,16 @@ class NestedMenuDecorator extends SiteTreeDecorator {
 		foreach($set as $index => $page) {
 			$classes = array();
 
+			if( in_array($page->Parent->ClassName, self::$classnames_to_exclude_children) ) {
+				continue;
+			}
+			
+			
 			// Get classes to put on li and a
 			$classes []= $page->FirstLast();
 			$classes []= $page->LinkingMode();
+// Passing in $classes as Reference
+			$page->extend('ExtraLinkClasses', $classes);
 
 			$ul = '';
 
